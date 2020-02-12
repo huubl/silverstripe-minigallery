@@ -19,6 +19,8 @@ class MiniGalleryPageExtension extends DataExtension
 
     use Configurable;
 
+    private static $image_upload_foldername = 'minigallery';
+
     private static $db = [
         'MiniGalleryCols'	=> "Enum('4,3,2,1','4')"
     ];
@@ -31,11 +33,28 @@ class MiniGalleryPageExtension extends DataExtension
         'MiniGalleryImages'
     ];
 
+
+    /**
+     * get upload folder name
+     * - from custom function on owner
+     * - or owner config
+     * - or this config
+     *
+     * @return mixed
+     */
+    public function getMiniGalleryUploadFolderName()
+    {
+        if(method_exists($this->owner, 'getCustomMiniGalleryUploadFolderName')) {
+            return $this->owner->getCustomMiniGalleryUploadFolderName();
+        }
+        if($this->owner->config()->get('minigallery_upload_foldername')) {
+            return $this->owner->config()->get('minigallery_upload_foldername');
+        }
+        return $this->config()->get('image_upload_foldername');
+    }
+
+
     public function updateCMSFields(FieldList $fields) {
-
-
-
-
 
         if($this->isMiniGalleryllowedPageType()) {
 
@@ -52,7 +71,7 @@ class MiniGalleryPageExtension extends DataExtension
             $MiniGalleryImagesConfig->addComponent(new BulkUploader());
 
             $MiniGalleryImagesConfig->getComponentByType('Colymba\\BulkUpload\\BulkUploader')
-                ->setUfSetup('setFolderName','minigallery')
+                ->setUfSetup('setFolderName',$this->getMiniGalleryUploadFolderName())  // 'minigallery'
                 ->setUfSetup('setAllowedExtensions', array('jpg', 'jpeg', 'gif', 'png'))
                 ->setAutoPublishDataObject(true);
                 //->setUfSetup('setAllowedMaxFileSize', (2 * 1024 * 1024)); // 2MB

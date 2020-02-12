@@ -65,6 +65,24 @@ class MiniGalleryImage extends DataObject implements PermissionProvider
         'Title'
     ];
 
+
+    /**
+     * get upload folder name
+     * from Derralf\Minigallery\MiniGalleryPageExtension
+     *
+     * @return mixed
+     */
+    public function getMiniGalleryUploadFolderName()
+    {
+        if($this->Page()->exists()) {
+            $page = $this->Page();
+            return $page->getMiniGalleryUploadFolderName();
+        }
+        return Config::inst()->get('Derralf\Minigallery\MiniGalleryPageExtension', 'image_upload_foldername');
+    }
+
+
+
 	public function getCMSFields()
     {
         $fields = parent::getCMSFields();
@@ -80,7 +98,7 @@ class MiniGalleryImage extends DataObject implements PermissionProvider
         $Image -> getValidator() -> setAllowedExtensions(array('jpg', 'jpeg', 'gif', 'png'));
         $Image -> getValidator() -> setAllowedMaxFileSize(2 * 1024 * 1024); // 2MB
         $Image -> setDescription('Empfohlenes Format: lange Kante max. 1920 Pixel<br>Erlaubte Dateiformate: jpg, png, gif<br>Erlaubte Dateigröße: max. 2MB');
-        $Image -> setFolderName('minigallery');
+        $Image -> setFolderName($this->getMiniGalleryUploadFolderName());   // 'minigallery'
         $fields -> replaceField('Image', $Image);
 
         return $fields;
