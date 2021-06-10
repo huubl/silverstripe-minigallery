@@ -4,6 +4,10 @@ Simple experimental Module to add a small Gallery to any paty type
 
 Private project, no help/support provided
 
+Objects ab not versioned but can be "hidden".  
+Attached images will get published/unpublished depending on whether on the object itself "hidden" is activated or not.  
+See below how to disable this behavior.
+
 ## Requirements
 
 * SilverStripe ^4.1
