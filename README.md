@@ -111,3 +111,21 @@ Derralf\Minigallery\MiniGalleryPageExtension:
   image_upload_foldername: 'minigallery'
 
 ```
+
+### Disable Auto-Publish and Auto-Unpublish
+
+The associated Image is automatically published or unbulblished on save depending on whether "hidden" is activated or not
+
+You can disable this behaviour by adding this to your config:
+
+```
+---
+name: MyMinigallery
+after: Minigallery
+---
+
+Derralf\Minigallery\MiniGalleryImage:
+  auto_publish_image: false
+  auto_unpublish_image: false
+```
+
