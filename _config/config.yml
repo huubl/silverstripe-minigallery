@@ -1,0 +1,6 @@
+---
+name: Minigallery
+---
+Derralf\Minigallery\MiniGalleryImage:
+  auto_publish_image: true
+  auto_unpublish_image: true

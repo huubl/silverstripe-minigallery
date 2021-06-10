@@ -5,6 +5,7 @@ namespace Derralf\Minigallery;
 
 use Page;
 use SilverStripe\Assets\Image;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\PermissionProvider;
@@ -36,7 +37,9 @@ class MiniGalleryImage extends DataObject implements PermissionProvider
 	private static $belongs_many_many = [];
 
 	private static $owns = [
-        'Image'
+        // do not "own" image, so we can unpublish images when $this is "hidden"
+        // see below: onBeforeWrite
+        // 'Image'
     ];
 
     private static $extensions = [
@@ -65,6 +68,24 @@ class MiniGalleryImage extends DataObject implements PermissionProvider
         'Title'
     ];
 
+
+    /**
+     * get upload folder name
+     * from Derralf\Minigallery\MiniGalleryPageExtension
+     *
+     * @return mixed
+     */
+    public function getMiniGalleryUploadFolderName()
+    {
+        if($this->Page()->exists()) {
+            $page = $this->Page();
+            return $page->getMiniGalleryUploadFolderName();
+        }
+        return Config::inst()->get('Derralf\Minigallery\MiniGalleryPageExtension', 'image_upload_foldername');
+    }
+
+
+
 	public function getCMSFields()
     {
         $fields = parent::getCMSFields();
@@ -80,10 +101,40 @@ class MiniGalleryImage extends DataObject implements PermissionProvider
         $Image -> getValidator() -> setAllowedExtensions(array('jpg', 'jpeg', 'gif', 'png'));
         $Image -> getValidator() -> setAllowedMaxFileSize(2 * 1024 * 1024); // 2MB
         $Image -> setDescription('Empfohlenes Format: lange Kante max. 1920 Pixel<br>Erlaubte Dateiformate: jpg, png, gif<br>Erlaubte Dateigröße: max. 2MB');
-        $Image -> setFolderName('minigallery');
+        $Image -> setFolderName($this->getMiniGalleryUploadFolderName());   // 'minigallery'
         $fields -> replaceField('Image', $Image);
 
         return $fields;
+    }
+
+
+    // publish or unpublish associated images
+    // we don't want images to be accidentally accessible that are not supposed to be!
+    public function onBeforeWrite()
+    {
+        parent::onBeforeWrite();
+        if($this->Hidden) {
+            $this->unpublishImage();
+        } else {
+            $this->publishImage();
+        }
+    }
+
+    public function onBeforeDelete() {
+        parent::onBeforeDelete();
+        $this->unpublishImage();
+    }
+
+    public function publishImage() {
+        if( $this->config()->get('auto_publish_image') && $this->Image()->exists() ) {
+            $this->Image()->publishRecursive();
+        }
+    }
+
+    public function unpublishImage() {
+        if( $this->config()->get('auto_unpublish_image') && $this->Image()->exists() ) {
+            $this->Image()->doUnpublish();
+        }
     }
 
 

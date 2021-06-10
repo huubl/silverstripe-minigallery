@@ -4,6 +4,10 @@ Simple experimental Module to add a small Gallery to any paty type
 
 Private project, no help/support provided
 
+Objects ab not versioned but can be "hidden".  
+Attached images will get published/unpublished depending on whether on the object itself "hidden" is activated or not.  
+See below how to disable this behavior.
+
 ## Requirements
 
 * SilverStripe ^4.1
@@ -71,3 +75,61 @@ Derralf\Minigallery\MiniGalleryPageExtension:
 ```
 
 **Don't** mix `allowed_pagetypes` and `disallowed_pagetypes`
+
+
+### Set image upload folder name
+
+1. custom function on your page type
+
+```
+## e.g.
+public function getCustomMiniGalleryUploadFolderName() {
+    return 'minigallery-partner-' . $this->URLSegment;
+}
+
+
+if(method_exists($this->owner, 'getCustomMiniGalleryUploadFolderName')) {
+            return $this->owner->getCustomMiniGalleryUploadFolderName();
+        }
+        if($this->owner->config()->get('minigallery_upload_foldername')) {
+            return $this->owner->config()->get('minigallery_upload_foldername');
+        }
+        return $this->config()->get('image_upload_foldername');
+```
+
+or 2. per page type config
+
+```
+Page:
+  minigallery_upload_foldername: 'minigallery-page'
+
+HomePage:
+  minigallery_upload_foldername: 'minigallery-homepage'
+
+```
+
+or 3. with extension config (defaults to 'minigallery')
+
+```
+Derralf\Minigallery\MiniGalleryPageExtension:
+  image_upload_foldername: 'minigallery'
+
+```
+
+### Disable Auto-Publish and Auto-Unpublish
+
+The associated Image is automatically published or unbulblished on save depending on whether "hidden" is activated or not
+
+You can disable this behaviour by adding this to your config:
+
+```
+---
+name: MyMinigallery
+after: Minigallery
+---
+
+Derralf\Minigallery\MiniGalleryImage:
+  auto_publish_image: false
+  auto_unpublish_image: false
+```
+
